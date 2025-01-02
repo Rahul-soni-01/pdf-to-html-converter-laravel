@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Data Table</title>
+    <!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+
+<!-- jQuery (required by DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS -->
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+
     <style>
         table {
             width: 100%;
@@ -22,26 +31,34 @@
 <body>
     <h1>PDF Data in Table Format</h1>
 
-    <table border="1">
+    <table id="bankStatementTable" border="1" cellpadding="10" cellspacing="0">
         <thead>
             <tr>
-                <th>Column 1</th>
-                <th>Column 2</th>
-                <th>Column 3</th>
-                <!-- Add more columns as necessary -->
+                @foreach ($header as $column)
+                    <th>{{ $column }}</th>
+                @endforeach
             </tr>
         </thead>
         <tbody>
-           
+            @foreach ($tableData as $row)
+                <tr>
+                    @foreach ($row as $column)
+                        <td>{{ $column }}</td>
+                    @endforeach
+                </tr>
+            @endforeach
         </tbody>
     </table>
-    @foreach ($tableData as $row)
-    <div>
-        @foreach ($row as $column)
-            <td>{{ $column }}</td>
-        @endforeach
-    </tr>
-@endforeach
     
+    <script>
+        $(document).ready(function() {
+            $('#bankStatementTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                responsive: true,
+            });
+        });
+    </script>
 </body>
 </html>
