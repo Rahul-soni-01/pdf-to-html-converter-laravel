@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -63,5 +64,51 @@ class PdfController extends Controller
         }
 
         return view('pdf-table', ['tableData' => $tableData, 'header' => $header]);
+    }
+
+    public function html(Request $request)
+    {
+        $request->validate([
+            'pdf' => 'required|mimes:pdf|max:2048',
+        ]);
+
+        $pdfPath = $request->file('pdf')->store('pdfs');
+
+        $absolutePdfPath = storage_path('app/' . $pdfPath);
+
+        if (!file_exists($absolutePdfPath)) {
+            return response()->json(['error' => 'File not found at: ' . $absolutePdfPath], 404);
+        }
+
+        $pdfParser = new Parser();
+        $pdf = $pdfParser->parseFile($absolutePdfPath);
+        $text = $pdf->getText();
+        // Process text to create structured HTML
+        $lines = explode("\n", $text);
+        $htmlRows = '';
+
+        foreach ($lines as $line) {
+            // Clean the line
+            $line = trim($line);
+            if (empty($line)) {
+                continue;
+            }
+
+            // Split line into columns (adjust splitting logic for your PDF's format)
+            $columns = preg_split('/\s{2,}/', $line); // Splitting by at least 2 spaces
+
+            // Construct a table row
+            $htmlRows .= '<tr>';
+            foreach ($columns as $column) {
+                $htmlRows .= '<td style="padding:5px; border:1px solid #ddd;">' . htmlspecialchars($column) . '</td>';
+            }
+            $htmlRows .= '</tr>';
+        }
+
+        // Wrap rows in a table
+        $htmlTable = '<table style="border-collapse:collapse; width:100%;">' . $htmlRows . '</table>';
+
+        // Return the HTML view with the generated table
+        return view('pdf-html', ['htmlTable' => $htmlTable]);
     }
 }
